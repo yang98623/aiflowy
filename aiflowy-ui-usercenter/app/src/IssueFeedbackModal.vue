@@ -81,7 +81,10 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <Teleport v-if="!route.path.includes('auth')" to="#app">
+  <Teleport
+    v-if="!route.path.includes('auth') && !route.path.includes('share')"
+    to="#app"
+  >
     <div
       class="fixed bottom-1 right-2 cursor-pointer text-6xl active:opacity-70"
       @click="showDialog = !showDialog"

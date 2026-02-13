@@ -22,6 +22,28 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'ChatHistory',
+        path: '/chatHistory',
+        component: () => import('#/views/chatHistory/index.vue'),
+        meta: {
+          icon: 'svg:chat-history',
+          order: 80,
+          title: '聊天记录',
+        },
+      },
+      {
+        name: 'ChatHistoryDetails',
+        path: '/chatHistory/:id',
+        component: () => import('#/views/chatHistory/details/index.vue'),
+        meta: {
+          title: '聊天记录',
+          hideInMenu: true,
+          hideInTab: true,
+          hideInBreadcrumb: true,
+          activePath: '/chatHistory',
+        },
+      },
+      {
         name: 'ExecHistory',
         path: '/execHistory',
         component: () => import('#/views/execHistory/index.vue'),

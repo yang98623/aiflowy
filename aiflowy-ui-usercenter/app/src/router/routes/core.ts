@@ -92,6 +92,20 @@ const coreRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    name: 'ChatHistoryShare',
+    path: '/share/:id',
+    component: () => import('#/views/chatHistory/share/index.vue'),
+    meta: {
+      title: '分享',
+      noBasicLayout: true,
+      hideInMenu: true,
+      hideInTab: true,
+      hideInBreadcrumb: true,
+      ignoreAccess: true,
+      loaded: true,
+    },
+  },
 ];
 
 export { coreRoutes, fallbackNotFoundRoute };
