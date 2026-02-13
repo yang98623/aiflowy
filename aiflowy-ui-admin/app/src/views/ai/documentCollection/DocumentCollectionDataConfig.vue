@@ -272,6 +272,37 @@ async function save() {
         </ElSelect>
       </ElFormItem>
       <ElFormItem
+        prop="dimensionOfVectorModel"
+        :label="$t('documentCollection.dimensionOfVectorModel')"
+      >
+        <template #label>
+          <span style="display: flex; align-items: center">
+            {{ $t('documentCollection.dimensionOfVectorModel') }}
+            <ElTooltip
+              :content="$t('documentCollection.dimensionOfVectorModelTips')"
+              placement="top"
+              effect="light"
+            >
+              <ElIcon
+                style="
+                  margin-left: 4px;
+                  color: #909399;
+                  cursor: pointer;
+                  font-size: 14px;
+                "
+              >
+                <InfoFilled />
+              </ElIcon>
+            </ElTooltip>
+          </span>
+        </template>
+        <ElInput
+          :disabled="!entity?.options?.canUpdateEmbeddingModel"
+          v-model.trim="entity.dimensionOfVectorModel"
+          type="number"
+        />
+      </ElFormItem>
+      <ElFormItem
         prop="rerankModelId"
         :label="$t('documentCollection.rerankLlmId')"
       >

@@ -3,14 +3,12 @@ package tech.aiflowy.usercenter.controller.ai;
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.tenant.TenantManager;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.aiflowy.ai.entity.BotConversation;
 import tech.aiflowy.ai.service.BotConversationService;
-import tech.aiflowy.ai.service.BotMessageService;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
@@ -28,8 +26,6 @@ public class UcBotConversationController extends BaseCurdController<BotConversat
 
     @Resource
     private BotConversationService conversationMessageService;
-    @Resource
-    private BotMessageService botMessageService;
 
     public UcBotConversationController(BotConversationService service) {
         super(service);
@@ -72,6 +68,7 @@ public class UcBotConversationController extends BaseCurdController<BotConversat
 
     /**
      * 分页查询会话列表
+     *
      * @param request    查询数据
      * @param sortKey    排序字段
      * @param sortType   排序方式 asc | desc
@@ -103,14 +100,9 @@ public class UcBotConversationController extends BaseCurdController<BotConversat
     @GetMapping("detail")
     @SaIgnore
     public Result<BotConversation> detail(String id) {
-        try {
-            TenantManager.ignoreTenantCondition();
-            if (tech.aiflowy.common.util.StringUtil.noText(id)) {
-                throw new BusinessException("id must not be null");
-            }
-            return Result.ok(service.getMapper().selectOneWithRelationsById(id));
-        } finally {
-            TenantManager.restoreTenantCondition();
+        if (tech.aiflowy.common.util.StringUtil.noText(id)) {
+            throw new BusinessException("id must not be null");
         }
+        return Result.ok(service.getMapper().selectOneWithRelationsById(id));
     }
 }
