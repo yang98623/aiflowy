@@ -221,9 +221,9 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
             return Result.ok(res);
         } catch (IOException e) {
             Log.error(e.toString(), e);
-        }
+            return Result.fail(e.getMessage());
 
-        return Result.fail("操作失败");
+        }
     }
 
     @Override
@@ -283,8 +283,14 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
                     documents.add(document);
                 }
         );
-        StoreResult result = documentStore.store(documents, options);
-        if (!result.isSuccess()) {
+        StoreResult result = null;
+        try {
+            result = documentStore.store(documents, options);
+        } catch (Exception e) {
+            Log.error(e.getMessage());
+            throw new BusinessException("向量过程中发生错误，错误信息为：" + e.getMessage());
+        }
+        if  (result == null || !result.isSuccess()) {
             Log.error("DocumentStore.store failed: " + result);
             throw new BusinessException("DocumentStore.store failed");
         }

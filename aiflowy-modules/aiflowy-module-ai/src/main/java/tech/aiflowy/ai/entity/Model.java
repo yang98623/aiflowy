@@ -62,7 +62,7 @@ public class Model extends ModelBase {
             case "ollama":
                 OllamaChatConfig ollamaChatConfig = new OllamaChatConfig();
                 ollamaChatConfig.setEndpoint(checkAndGetEndpoint());
-                if(StringUtil.hasText(getApiKey())){
+                if (StringUtil.hasText(getApiKey())) {
                     ollamaChatConfig.setApiKey(checkAndGetApiKey());
                 }
                 ollamaChatConfig.setModel(checkAndGetModelName());
@@ -116,28 +116,34 @@ public class Model extends ModelBase {
         if (StringUtil.noText(providerType)) {
             return null;
         }
-        switch (providerType.toLowerCase()) {
-            case "ollama":
-                OllamaEmbeddingConfig ollamaEmbeddingConfig = new OllamaEmbeddingConfig();
-                ollamaEmbeddingConfig.setProvider(getModelProvider().getProviderName());
-                ollamaEmbeddingConfig.setEndpoint(checkAndGetEndpoint());
-                ollamaEmbeddingConfig.setApiKey(getApiKey());
-                ollamaEmbeddingConfig.setModel(checkAndGetModelName());
-                ollamaEmbeddingConfig.setRequestPath(getRequestPath());
-                return new OllamaEmbeddingModel(ollamaEmbeddingConfig);
-            default:
-                OpenAIEmbeddingConfig openAIEmbeddingConfig = new OpenAIEmbeddingConfig();
-                openAIEmbeddingConfig.setProvider(getModelProvider().getProviderName());
-                openAIEmbeddingConfig.setEndpoint(checkAndGetEndpoint());
-                openAIEmbeddingConfig.setApiKey(checkAndGetApiKey());
-                openAIEmbeddingConfig.setModel(checkAndGetModelName());
-                openAIEmbeddingConfig.setRequestPath(checkAndGetRequestPath());
-                return new OpenAIEmbeddingModel(openAIEmbeddingConfig);
+        try {
+            switch (providerType.toLowerCase()) {
+                case "ollama":
+                    OllamaEmbeddingConfig ollamaEmbeddingConfig = new OllamaEmbeddingConfig();
+                    ollamaEmbeddingConfig.setProvider(getModelProvider().getProviderName());
+                    ollamaEmbeddingConfig.setEndpoint(checkAndGetEndpoint());
+                    ollamaEmbeddingConfig.setApiKey(getApiKey());
+                    ollamaEmbeddingConfig.setModel(checkAndGetModelName());
+                    ollamaEmbeddingConfig.setRequestPath(getRequestPath());
+                    return new OllamaEmbeddingModel(ollamaEmbeddingConfig);
+                default:
+                    OpenAIEmbeddingConfig openAIEmbeddingConfig = new OpenAIEmbeddingConfig();
+                    openAIEmbeddingConfig.setProvider(getModelProvider().getProviderName());
+                    openAIEmbeddingConfig.setEndpoint(checkAndGetEndpoint());
+                    openAIEmbeddingConfig.setApiKey(checkAndGetApiKey());
+                    openAIEmbeddingConfig.setModel(checkAndGetModelName());
+                    openAIEmbeddingConfig.setRequestPath(checkAndGetRequestPath());
+                    return new OpenAIEmbeddingModel(openAIEmbeddingConfig);
+            }
+        } catch (Exception e) {
+            throw new BusinessException("向量模型配置失败：" + e.getMessage());
         }
+
     }
 
     /**
      * 获取模型向量的维度
+     *
      * @return
      */
     public static int getEmbeddingDimension(EmbeddingModel embeddingModel) {
@@ -149,7 +155,7 @@ public class Model extends ModelBase {
     }
 
     public String checkAndGetRequestPath() {
-        if (StrUtil.isEmpty(getRequestPath())){
+        if (StrUtil.isEmpty(getRequestPath())) {
             throw new BusinessException("请求地址不能为空");
         }
         return getRequestPath();
@@ -163,14 +169,14 @@ public class Model extends ModelBase {
     }
 
     public String checkAndGetEndpoint() {
-        if (StrUtil.isEmpty(getEndpoint())){
+        if (StrUtil.isEmpty(getEndpoint())) {
             throw new BusinessException("API 地址不能为空");
         }
         return getEndpoint();
     }
 
     public String checkAndGetModelName() {
-        if (StrUtil.isEmpty(getModelName())){
+        if (StrUtil.isEmpty(getModelName())) {
             throw new BusinessException("模型名称不能为空");
         }
         return getModelName();
