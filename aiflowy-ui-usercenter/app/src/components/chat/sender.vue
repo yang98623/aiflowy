@@ -47,7 +47,7 @@ const btnLoading = ref(false);
 const getSessionList = inject<any>('getSessionList');
 const clearSenderFiles = () => {
   files.value = [];
-  attachmentsRef.value.clearFiles();
+  attachmentsRef.value?.clearFiles();
   openCloseHeader();
 };
 function sendMessage() {
@@ -58,7 +58,7 @@ function sendMessage() {
     conversationId: props.conversationId,
     prompt: senderValue.value,
     botId: props.bot.id,
-    attachments: attachmentsRef.value.getFileList(),
+    attachments: attachmentsRef.value?.getFileList(),
   };
   clearSenderFiles();
   btnLoading.value = true;

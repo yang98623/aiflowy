@@ -161,11 +161,11 @@ const stopSse = () => {
 };
 const clearSenderFiles = () => {
   files.value = [];
-  attachmentsRef.value.clearFiles();
+  attachmentsRef.value?.clearFiles();
   openCloseHeader();
 };
 const handleSubmit = async (refreshContent: string) => {
-  const attachments = attachmentsRef.value.getFileList();
+  const attachments = attachmentsRef.value?.getFileList();
   const currentPrompt = refreshContent || senderValue.value.trim();
   if (!currentPrompt) {
     return;
