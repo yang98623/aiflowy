@@ -1,5 +1,6 @@
 package tech.aiflowy.usercenter.controller.ai;
 
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.mybatisflex.core.query.QueryWrapper;
@@ -36,12 +37,12 @@ public class UcBotMessageController extends BaseCurdController<BotMessageService
     }
 
     @GetMapping("/getMessages")
+    @SaIgnore
     public Result<List<ChatMessageVO>> getMessages(BigInteger botId, BigInteger conversationId) {
         List<ChatMessageVO> res = new ArrayList<>();
         QueryWrapper w = QueryWrapper.create();
         w.eq(BotMessage::getBotId, botId);
         w.eq(BotMessage::getConversationId, conversationId);
-        w.eq(BotMessage::getAccountId, SaTokenUtil.getLoginAccount().getId());
         List<BotMessage> list = botMessageService.list(w);
         if (CollectionUtil.isNotEmpty(list)) {
             for (BotMessage message : list) {

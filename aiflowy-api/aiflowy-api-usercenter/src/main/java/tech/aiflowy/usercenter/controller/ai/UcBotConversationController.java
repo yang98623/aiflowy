@@ -1,6 +1,10 @@
 package tech.aiflowy.usercenter.controller.ai;
 
 import cn.dev33.satoken.annotation.SaIgnore;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.tenant.TenantManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,6 +15,7 @@ import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -63,5 +68,49 @@ public class UcBotConversationController extends BaseCurdController<BotConversat
         entity.setAccountId(SaTokenUtil.getLoginAccount().getId());
         entity.setCreated(new Date());
         return super.onSaveOrUpdateBefore(entity, isSave);
+    }
+
+    /**
+     * 分页查询会话列表
+     * @param request    查询数据
+     * @param sortKey    排序字段
+     * @param sortType   排序方式 asc | desc
+     * @param pageNumber 当前页码
+     * @param pageSize   每页的数据量
+     * @return
+     */
+    @GetMapping("pageList")
+    public Result<Page<BotConversation>> page(HttpServletRequest request, String sortKey, String sortType, Long pageNumber, Long pageSize) {
+        if (pageNumber == null || pageNumber < 1) {
+            pageNumber = 1L;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10L;
+        }
+
+        QueryWrapper queryWrapper = buildQueryWrapper(request);
+        queryWrapper.orderBy(buildOrderBy(sortKey, sortType, getDefaultOrderBy()));
+        Page<BotConversation> botConversationPage = service.getMapper().paginateWithRelations(pageNumber, pageSize, queryWrapper);
+        return Result.ok(botConversationPage);
+    }
+
+    /**
+     * 根据表主键查询数据详情。
+     *
+     * @param id 主键值
+     * @return 内容详情
+     */
+    @GetMapping("detail")
+    @SaIgnore
+    public Result<BotConversation> detail(String id) {
+        try {
+            TenantManager.ignoreTenantCondition();
+            if (tech.aiflowy.common.util.StringUtil.noText(id)) {
+                throw new BusinessException("id must not be null");
+            }
+            return Result.ok(service.getById(id));
+        } finally {
+            TenantManager.restoreTenantCondition();
+        }
     }
 }
