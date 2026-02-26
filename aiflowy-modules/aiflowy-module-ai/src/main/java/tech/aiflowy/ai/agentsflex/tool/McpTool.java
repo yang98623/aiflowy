@@ -11,6 +11,7 @@ import tech.aiflowy.common.util.StringUtil;
 
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class McpTool extends BaseTool {
@@ -30,9 +31,9 @@ public class McpTool extends BaseTool {
             McpClientManager mcpClientManager = McpClientManager.getInstance();
             Tool mcpTool = mcpClientManager.getMcpTool(serverName, this.name);
             Object result = mcpTool.invoke(argsMap);
-            return result;
+            return Objects.requireNonNullElse(result, "");
         }
-        return null;
+        return "未查询到相关数据";
     }
 
 

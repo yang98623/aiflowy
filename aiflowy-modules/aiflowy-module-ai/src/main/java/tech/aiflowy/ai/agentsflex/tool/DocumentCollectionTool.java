@@ -49,7 +49,9 @@ public class DocumentCollectionTool extends BaseTool {
 
     @Override
     public Object invoke(Map<String, Object> argsMap) {
-
+        if (argsMap == null) {
+            return "未查询到相关知识";
+        }
         DocumentCollectionService knowledgeService = SpringContextUtil.getBean(DocumentCollectionService.class);
         List<Document> documents = knowledgeService.search(this.knowledgeId, (String) argsMap.get("input"));
 
