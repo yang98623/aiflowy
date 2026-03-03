@@ -199,13 +199,6 @@ const handleSubmit = async (refreshContent: string) => {
       //  finish
       if (event === 'done') {
         sending.value = false;
-        if (lastIndex) {
-          bubbleItems.value[lastIndex] = {
-            ...lastBubbleItem!,
-            loading: false,
-          };
-        }
-        stopThinking();
         return;
       }
       if (!message.data) {
@@ -286,6 +279,7 @@ const handleSubmit = async (refreshContent: string) => {
               '```echartsoption',
               '```echarts\noption',
             ),
+            loading: false,
             typing: true,
           };
           stopThinking();

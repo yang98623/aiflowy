@@ -92,8 +92,6 @@ function sendMessage() {
 
       if (res.event === 'done') {
         btnLoading.value = false;
-        props.updateLastMessage({ loading: false });
-        props.stopThinking();
         getSessionList();
       }
 
@@ -164,6 +162,7 @@ function sendMessage() {
       } else if (sseData.type === 'MESSAGE') {
         props.updateLastMessage({
           thinkingStatus: 'end',
+          loading: false,
           content: (content += delta),
         });
         props.stopThinking();
