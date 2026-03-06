@@ -9,6 +9,7 @@ import com.agentsflex.core.model.chat.response.AiMessageResponse;
 import com.agentsflex.core.model.client.StreamContext;
 import com.agentsflex.core.prompt.MemoryPrompt;
 import org.apache.catalina.connector.ClientAbortException;
+import tech.aiflowy.common.util.StringUtil;
 import tech.aiflowy.core.chat.protocol.ChatDomain;
 import tech.aiflowy.core.chat.protocol.ChatEnvelope;
 import tech.aiflowy.core.chat.protocol.ChatType;
@@ -56,8 +57,6 @@ public class ChatStreamListener implements StreamResponseListener {
             if (aiMessage.isFinalDelta() && aiMessageResponse.hasToolCalls()) {
                 this.canStop = false; // 工具调用期间，禁止执行onStop
                 this.hasToolCall = true; // 标记已进入过工具调用
-                aiMessage.setContent(null);
-                memoryPrompt.addMessage(aiMessage);
                 List<ToolMessage> toolMessages = aiMessageResponse.executeToolCallsAndGetToolMessages();
                 for (ToolMessage toolMessage : toolMessages) {
                     memoryPrompt.addMessage(toolMessage);
@@ -71,6 +70,16 @@ public class ChatStreamListener implements StreamResponseListener {
                 if (reasoningContent != null && !reasoningContent.isEmpty()) {
                     sendChatEnvelope(sseEmitter, reasoningContent, ChatType.THINKING);
                 } else {
+                    if ("".equals(aiMessage.getContent())
+                            && "".equals(aiMessage.getFullContent())
+                            && StringUtil.noText(aiMessage.getFullReasoningContent())) {
+                        return;  // ignore 一般情况第一条消息
+                    }
+                    if ("\n\n".equals(aiMessage.getContent())
+                            && "\n\n".equals(aiMessage.getFullContent())
+                            && StringUtil.hasText(aiMessage.getFullReasoningContent())) {
+                        return; // ignore 一般情况下是 reasoning 和 tool_call 间隔消息，忽略
+                    }
                     String delta = aiMessage.getContent();
                     if (delta != null && !delta.isEmpty()) {
                         sendChatEnvelope(sseEmitter, delta, ChatType.MESSAGE);
