@@ -8,7 +8,6 @@ import com.agentsflex.core.model.chat.StreamResponseListener;
 import com.agentsflex.core.model.chat.response.AiMessageResponse;
 import com.agentsflex.core.model.client.StreamContext;
 import com.agentsflex.core.prompt.MemoryPrompt;
-import org.apache.catalina.connector.ClientAbortException;
 import tech.aiflowy.common.util.StringUtil;
 import tech.aiflowy.core.chat.protocol.ChatDomain;
 import tech.aiflowy.core.chat.protocol.ChatEnvelope;
@@ -99,7 +98,8 @@ public class ChatStreamListener implements StreamResponseListener {
 
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            sendSystemError(sseEmitter, e.getMessage());
         }
     }
 
@@ -107,7 +107,6 @@ public class ChatStreamListener implements StreamResponseListener {
     public void onStop(StreamContext context) {
         // 仅当canStop为true（最后一次无后续工具调用的响应）时，执行业务逻辑
         if (this.canStop) {
-            System.out.println("onStop");
             if (context.getThrowable() != null) {
                 sendSystemError(sseEmitter, context.getThrowable().getMessage());
                 return;
