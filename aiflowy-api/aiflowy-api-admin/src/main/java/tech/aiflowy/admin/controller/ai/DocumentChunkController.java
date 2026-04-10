@@ -131,7 +131,7 @@ public class DocumentChunkController extends BaseCurdController<DocumentChunkSer
         StoreOptions options = StoreOptions.ofCollectionName(knowledge.getVectorStoreCollection());
         List<BigInteger> deleteList = new ArrayList<>();
         deleteList.add(chunkId);
-        documentStore.delete(deleteList, options);
+        documentStore.doDelete(deleteList, options);
         documentChunkService.removeChunk(knowledge, chunkId);
 
         return super.remove(chunkId);

@@ -19,6 +19,7 @@ import tech.aiflowy.ai.entity.Model;
 import tech.aiflowy.ai.entity.VectorDatabase;
 import tech.aiflowy.ai.mapper.DocumentChunkMapper;
 import tech.aiflowy.ai.mapper.DocumentCollectionMapper;
+import tech.aiflowy.ai.mapper.DocumentMapper;
 import tech.aiflowy.ai.service.DocumentCollectionService;
 import tech.aiflowy.ai.service.ModelService;
 import tech.aiflowy.ai.service.VectorDatabaseService;
@@ -60,7 +61,8 @@ public class DocumentCollectionServiceImpl extends ServiceImpl<DocumentCollectio
     private DocumentChunkMapper documentChunkMapper;
     @Resource
     private VectorDatabaseService vectorDatabaseService;
-
+    @Resource
+    private DocumentMapper documentMapper;
     private static final Integer MAX_RECALL_DOC_NUM = 10;
 
     @Override
@@ -247,36 +249,47 @@ public class DocumentCollectionServiceImpl extends ServiceImpl<DocumentCollectio
 
     @Override
     public Result<?> beforeRemove(Collection<Serializable> ids) {
-//        if (ids == null || ids.isEmpty()) {
-//            throw new BusinessException("知识库id 不能为空");
-//        }
-//        for (Serializable id : ids) {
-//            DocumentCollection documentCollection = getById(id);
-//            if (documentCollection == null) {
-//                return Result.fail(2, "知识库不存在");
-//            }
-//            QueryWrapper queryWrapper = QueryWrapper.create().eq(DocumentChunk::getDocumentCollectionId, id);
-//            List<DocumentChunk> documentChunks = documentChunkMapper.selectListByQuery(queryWrapper);
-//            List<BigInteger> chunkIds = new ArrayList<>();
-//            if (documentChunks != null) {
-//                documentChunks.forEach(item -> {
-//                    chunkIds.add(item.getId());
-//                });
-//            }
-//            DocumentStore documentStore = documentCollection.toDocumentStore();
-//            StoreOptions options = StoreOptions.ofCollectionName(documentCollection.getVectorStoreCollection());
-//
-//            if (documentStore != null) {
-//                // 删除向量数据库中的数据
-//                documentStore.delete(chunkIds, options);
-//            }
-//
-//            // 删除数据库中的文档块数据
-//            documentChunkMapper.deleteBatchByIds(chunkIds);
-//            QueryWrapper documentQueryWrapper = QueryWrapper.create().eq(tech.aiflowy.ai.entity.Document::getCollectionId, id);
-//            // 删除数据库中的文档数据
-//            documentMapper.deleteByQuery(documentQueryWrapper);
-//        }
+        if (ids == null || ids.isEmpty()) {
+            throw new BusinessException("知识库id 不能为空");
+        }
+        List<DocumentCollection> documentCollections = listByIds(ids);
+        for (DocumentCollection documentCollection : documentCollections) {
+            if (documentCollection == null) {
+                return Result.fail(2, "知识库不存在");
+            }
+            BigInteger documentCollectionId = documentCollection.getId();
+            QueryWrapper queryWrapper = QueryWrapper.create().eq(DocumentChunk::getDocumentCollectionId, documentCollectionId);
+            List<DocumentChunk> documentChunks = documentChunkMapper.selectListByQuery(queryWrapper);
+            if (documentChunks == null || documentChunks.isEmpty()) {
+                continue;
+            }
+            List<BigInteger> chunkIds = new ArrayList<>();
+            documentChunks.forEach(item -> {
+                chunkIds.add(item.getId());
+            });
+            List<String> stringDocIds = chunkIds.stream()
+                    .map(BigInteger::toString)
+                    .toList();
+            BigInteger vectorDatabaseId = documentCollection.getVectorDatabaseId();
+            VectorDatabase vectorDatabase = vectorDatabaseService.getById(vectorDatabaseId);
+            if (vectorDatabase == null) {
+                throw new BusinessException("向量数据库不存在");
+            }
+            DocumentStore documentStore = vectorDatabase.toDocumentStore(documentCollection.getVectorOtherConfig());
+            StoreOptions options = StoreOptions.ofCollectionName(documentCollection.getVectorStoreCollection());
+
+            if (documentStore != null) {
+                // 删除向量数据库中的数据
+                documentStore.doDelete(stringDocIds, options);
+            }
+            DocumentSearcher searcher = searcherFactory.getSearcher((String) documentCollection.getOptionsByKey(KEY_SEARCH_ENGINE_TYPE));
+            chunkIds.forEach(searcher::deleteDocument);
+            // 删除数据库中的文档块数据
+            documentChunkMapper.deleteBatchByIds(chunkIds);
+            QueryWrapper documentQueryWrapper = QueryWrapper.create().eq(tech.aiflowy.ai.entity.Document::getCollectionId, documentCollectionId);
+            // 删除数据库中的文档数据
+            documentMapper.deleteByQuery(documentQueryWrapper);
+        }
         return null;
     }
 }
